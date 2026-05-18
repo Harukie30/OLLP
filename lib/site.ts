@@ -1,5 +1,8 @@
 export const churchName = "Our Lady of Lourdes Church"
 export const churchShortName = "Our Lady of Lourdes"
+export const churchEyebrow = "Shrine & Parish"
+export const churchFormalName =
+  "Shrine and Parish of Our Lady of Lourdes"
 
 export const siteLogo = {
   src: "/logo.jpg",

@@ -2,8 +2,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { Clock, MapPin } from "lucide-react"
 
+import { SiteLogo } from "@/components/site-logo"
 import { SiteShell } from "@/components/site-shell"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { address, heroBackground, serviceSummary } from "@/lib/site"
 
@@ -26,10 +26,13 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-8 px-4 py-20 text-center sm:px-6 sm:py-28 md:min-h-[calc(100vh-4rem)] md:justify-center md:py-32">
-          <Badge variant="secondary" className="gap-1.5 border-sky-200/150 bg-white/80 px-3 py-1 backdrop-blur-sm">
-            <span className="size-1.5 rounded-full bg-primary" />
-            Shrine and Parish of Our Lady of Lourdes
-          </Badge>
+          <div className="rounded-full bg-white/85 p-2 shadow-md shadow-sky-900/10 ring-1 ring-sky-200/80 backdrop-blur-sm">
+            <SiteLogo
+              size="lg"
+              priority
+              className="size-16 ring-2 ring-white sm:size-20"
+            />
+          </div>
 
           <div className="flex max-w-3xl flex-col gap-5">
             <h1 className="text-4xl font-semibold tracking-tight text-balance text-blue-950 sm:text-5xl md:text-6xl">
