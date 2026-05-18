@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Grace Community Church",
+  title: "Shrine and Parish of Our Lady of Lourdes",
   description:
     "A welcoming church family worship, community, and faith in Jesus. Plan your visit today.",
   icons: {
