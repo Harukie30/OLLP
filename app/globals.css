@@ -46,6 +46,10 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-collapsible-down: collapsible-down 0.7s cubic-bezier(0.33, 1, 0.68, 1);
+  --animate-collapsible-up: collapsible-up 0.65s cubic-bezier(0.32, 0, 0.67, 0);
+  --animate-footer-panel-down: footer-panel-down 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  --animate-footer-panel-up: footer-panel-up 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :root {
@@ -127,6 +131,84 @@
   html {
     @apply font-sans;
   }
+}
+
+@keyframes collapsible-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+/* Footer Explore: panel folds from the Explore row; links enter/exit separately */
+@keyframes footer-panel-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes footer-panel-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes footer-item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.65rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes footer-item-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.4rem) scale(0.97);
+  }
+}
+
+.footer-explore-link-enter {
+  animation: footer-item-enter 480ms cubic-bezier(0.33, 1, 0.68, 1) both;
+  animation-delay: calc(var(--stack-i) * 70ms);
+}
+
+.footer-explore-link-exit {
+  animation: footer-item-exit 450ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation-delay: calc((var(--stack-last) - var(--stack-i)) * 65ms);
+  pointer-events: none;
 }
 
 @keyframes loading-bar {

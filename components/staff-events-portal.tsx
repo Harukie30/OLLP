@@ -437,10 +437,8 @@ function StaffEventsEditor({
           </form>
 
           <div className="flex flex-wrap gap-2 border-t border-sky-100 pt-3">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Close
-            </Button>
-            <Button type="button" variant="ghost" onClick={onLogout} disabled={pending}>
+            
+            <Button className="bg-red-500 text-white shadow-sm shadow-red-500/25 cursor-pointer hover:bg-red-600" type="button" onClick={onLogout} disabled={pending}>
               Sign out
             </Button>
           </div>

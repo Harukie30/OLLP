@@ -10,6 +10,9 @@ export const siteLogo = {
 } as const
 
 export const heroBackground = "/bg-ch.JPG"
+export const aboutPageBackground = "/lourdes.jpg"
+/** CSS object-position for the About intro background (e.g. "right center", "75% 30%"). */
+export const aboutPageBackgroundPosition = "right center"
 export const visitPageBackground = "/bg-ch2.jpg"
 
 export const visitMinistryLogos = [
@@ -17,8 +20,18 @@ export const visitMinistryLogos = [
   { src: "/k of c.jpg", alt: "Knights of Columbus" },
 ] as const
 
+/** Small logos shown in the site footer. */
+export const footerOrganizationLogos = [
+  { src: "/logo.jpg", alt: "Assumpta Choir" },
+  {
+    src: "/youth.jpg",
+    alt: "Our Lady of Lourdes Parish Youth Ministry",
+  },
+  { src: "/k of cc.png", alt: "Knights of Columbus" },
+] as const
+
 export const address = {
-  line: "123 Hope Street, Your City, ST 12345",
+  line: "Celestino Gallares St, Tagbilaran City, Bohol, Philippines",
   short: "Celestino Gallares St, Tagbilaran City, Bohol, Philippines",
 }
 

@@ -1,7 +1,9 @@
 import type { ComponentType, ReactNode } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowUpRight, Clock, Mail, MapPin } from "lucide-react"
 
+import { FooterExploreNav } from "@/components/footer-explore-nav"
 import { SiteLogo } from "@/components/site-logo"
 import { StaffFooterLinkLoader } from "@/components/staff-footer-link-loader"
 import { Button } from "@/components/ui/button"
@@ -10,6 +12,7 @@ import {
   churchName,
   churchShortName,
   contactEmail,
+  footerOrganizationLogos,
   navLinks,
   officeHours,
   serviceSummary,
@@ -61,39 +64,31 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <nav
-            aria-label="Footer navigation"
-            className="lg:col-span-2"
-          >
-            <FooterHeading>Explore</FooterHeading>
-            <ul className="mt-4 flex flex-col gap-2.5">
-              {exploreLinks.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className={footerLinkClass}>
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <div className="flex flex-col gap-6 lg:col-span-5">
+            <div className="grid gap-8 sm:grid-cols-2">
+              <FooterExploreNav links={exploreLinks} linkClassName={footerLinkClass} />
 
-          <div className="lg:col-span-3">
-            <FooterHeading>Contact</FooterHeading>
-            <ul className="mt-4 flex flex-col gap-3">
-              <ContactItem icon={MapPin} label="Address">
-                {address.line}
-              </ContactItem>
-              <ContactItem icon={Clock} label="Office hours">
-                {officeHours}
-              </ContactItem>
-              <ContactItem
-                icon={Mail}
-                label="Email"
-                href={`mailto:${contactEmail}`}
-              >
-                {contactEmail}
-              </ContactItem>
-            </ul>
+              <div>
+                <FooterHeading>Contact</FooterHeading>
+                <ul className="mt-4 flex flex-col gap-3">
+                  <ContactItem icon={MapPin} label="Address">
+                    {address.line}
+                  </ContactItem>
+                  <ContactItem icon={Clock} label="Office hours">
+                    {officeHours}
+                  </ContactItem>
+                  <ContactItem
+                    icon={Mail}
+                    label="Email"
+                    href={`mailto:${contactEmail}`}
+                  >
+                    {contactEmail}
+                  </ContactItem>
+                </ul>
+              </div>
+            </div>
+
+            <FooterOrganizationLogos />
           </div>
 
           <div className="lg:col-span-3">
@@ -133,6 +128,37 @@ export function SiteFooter() {
         </div>
       </div>
     </footer>
+  )
+}
+
+function FooterOrganizationLogos() {
+  return (
+    <div className="border-t border-white/10 pt-5">
+      <FooterHeading className="text-[10px] tracking-[0.2em] text-sky-300/80">
+        Parish organizations
+      </FooterHeading>
+      <ul
+        className="mt-2.5 flex flex-wrap items-center gap-2.5"
+        aria-label="Parish organization logos"
+      >
+        {footerOrganizationLogos.map((org) => (
+          <li key={org.src}>
+            <span
+              className="flex size-10 items-center justify-center rounded-full bg-white/95 p-0.5 ring-1 ring-white/20"
+              title={org.alt}
+            >
+              <Image
+                src={org.src}
+                alt={org.alt}
+                width={36}
+                height={36}
+                className="size-full rounded-full object-contain"
+              />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
