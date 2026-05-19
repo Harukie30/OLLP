@@ -3,6 +3,7 @@ import Link from "next/link"
 import { ArrowUpRight, Clock, Mail, MapPin } from "lucide-react"
 
 import { SiteLogo } from "@/components/site-logo"
+import { StaffFooterLinkLoader } from "@/components/staff-footer-link-loader"
 import { Button } from "@/components/ui/button"
 import {
   address,
@@ -122,6 +123,7 @@ export function SiteFooter() {
           <p className="text-sm text-blue-100/70">
             © {new Date().getFullYear()} {churchName}. All rights reserved.
           </p>
+          <StaffFooterLinkLoader />
           <a
             href={`mailto:${contactEmail}`}
             className="text-sm text-sky-200 underline-offset-4 transition-colors hover:text-white hover:underline"

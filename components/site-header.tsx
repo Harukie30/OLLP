@@ -50,7 +50,7 @@ export function SiteHeader({ hideVisitCta = false }: SiteHeaderProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b border-blue-100 bg-white/85 backdrop-blur-md transition-transform duration-300 ease-in-out",
+        "sticky top-0 z-50 border-b border-blue-100 bg-blue-100/90 backdrop-blur-md transition-transform duration-300 ease-in-out",
         visible ? "translate-y-0" : "-translate-y-full"
       )}
     >

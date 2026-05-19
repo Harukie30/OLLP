@@ -2,13 +2,47 @@
 
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
 
 import { cn } from "@/lib/utils"
 import { siteLogo } from "@/lib/site"
 
-const MIN_LOAD_MS = 2500
+const NAV_MIN_LOAD_MS = 2500
 const MAX_LOAD_MS = 8000
+const DEFAULT_MANUAL_MIN_MS = 700
+
+type PageLoadingOptions = {
+  title?: string
+  description?: string
+  /** Minimum time the overlay stays visible (defaults to 700ms for manual loads). */
+  minMs?: number
+}
+
+type PageLoadingContextValue = {
+  isLoading: boolean
+  startLoading: (options?: PageLoadingOptions) => void
+  /** Waits for the minimum display time, then hides the overlay. */
+  stopLoading: () => Promise<void>
+}
+
+const PageLoadingContext = createContext<PageLoadingContextValue | null>(null)
+
+export function usePageLoading() {
+  const context = useContext(PageLoadingContext)
+  if (!context) {
+    throw new Error("usePageLoading must be used within PageLoadingProvider")
+  }
+  return context
+}
 
 function isInternalLink(anchor: HTMLAnchorElement, pathname: string) {
   const href = anchor.getAttribute("href")
@@ -39,12 +73,20 @@ function isInternalLink(anchor: HTMLAnchorElement, pathname: string) {
   return true
 }
 
+const defaultOverlay = {
+  title: "Just a moment",
+  description: "Preparing the next page for you…",
+}
+
 export function PageLoadingProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const [isLoading, setIsLoading] = useState(false)
+  const [overlay, setOverlay] = useState(defaultOverlay)
 
   const isPending = useRef(false)
+  const isManual = useRef(false)
   const startedAt = useRef(0)
+  const minLoadMs = useRef(NAV_MIN_LOAD_MS)
   const lastPathname = useRef(pathname)
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const maxTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -56,20 +98,46 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
     maxTimer.current = null
   }, [])
 
+  const resetOverlay = useCallback(() => {
+    setOverlay(defaultOverlay)
+    isManual.current = false
+    minLoadMs.current = NAV_MIN_LOAD_MS
+  }, [])
+
   const stopLoading = useCallback(() => {
     clearTimers()
     setIsLoading(false)
     isPending.current = false
     startedAt.current = 0
-  }, [clearTimers])
+    resetOverlay()
+  }, [clearTimers, resetOverlay])
 
-  const scheduleStop = useCallback(() => {
+  const scheduleStop = useCallback((): Promise<void> => {
     clearTimers()
 
     const elapsed = Date.now() - startedAt.current
-    const remaining = Math.max(0, MIN_LOAD_MS - elapsed)
+    const remaining = Math.max(0, minLoadMs.current - elapsed)
 
-    hideTimer.current = setTimeout(stopLoading, remaining)
+    return new Promise((resolve) => {
+      hideTimer.current = setTimeout(() => {
+        stopLoading()
+        resolve()
+      }, remaining)
+    })
+  }, [clearTimers, stopLoading])
+
+  const startLoading = useCallback((options?: PageLoadingOptions) => {
+    clearTimers()
+    isPending.current = true
+    isManual.current = true
+    startedAt.current = Date.now()
+    minLoadMs.current = options?.minMs ?? DEFAULT_MANUAL_MIN_MS
+    setOverlay({
+      title: options?.title ?? "Just a moment",
+      description: options?.description ?? "Please wait…",
+    })
+    setIsLoading(true)
+    maxTimer.current = setTimeout(stopLoading, MAX_LOAD_MS)
   }, [clearTimers, stopLoading])
 
   useEffect(() => {
@@ -83,7 +151,10 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
       if (!anchor || !isInternalLink(anchor, pathname)) return
 
       isPending.current = true
+      isManual.current = false
       startedAt.current = Date.now()
+      minLoadMs.current = NAV_MIN_LOAD_MS
+      setOverlay(defaultOverlay)
       setIsLoading(true)
 
       maxTimer.current = setTimeout(stopLoading, MAX_LOAD_MS)
@@ -94,7 +165,7 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
   }, [pathname, stopLoading])
 
   useEffect(() => {
-    if (!isPending.current) {
+    if (!isPending.current || isManual.current) {
       lastPathname.current = pathname
       return
     }
@@ -102,7 +173,7 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
     if (pathname === lastPathname.current) return
 
     lastPathname.current = pathname
-    scheduleStop()
+    void scheduleStop()
   }, [pathname, scheduleStop])
 
   useEffect(() => () => clearTimers(), [clearTimers])
@@ -114,21 +185,38 @@ export function PageLoadingProvider({ children }: { children: ReactNode }) {
     }
   }, [isLoading])
 
+  const value = useMemo(
+    () => ({ isLoading, startLoading, stopLoading: scheduleStop }),
+    [isLoading, startLoading, scheduleStop]
+  )
+
   return (
-    <>
+    <PageLoadingContext.Provider value={value}>
       {children}
-      <PageLoadingOverlay open={isLoading} />
-    </>
+      <PageLoadingOverlay
+        open={isLoading}
+        title={overlay.title}
+        description={overlay.description}
+      />
+    </PageLoadingContext.Provider>
   )
 }
 
-function PageLoadingOverlay({ open }: { open: boolean }) {
+function PageLoadingOverlay({
+  open,
+  title,
+  description,
+}: {
+  open: boolean
+  title: string
+  description: string
+}) {
   return (
     <div
       role="alertdialog"
       aria-modal="true"
       aria-busy={open}
-      aria-label="Loading page"
+      aria-label={title}
       aria-hidden={!open}
       className={cn(
         "fixed inset-0 z-[100] flex items-center justify-center bg-blue-950/45 p-4 backdrop-blur-md transition-opacity duration-300",
@@ -149,10 +237,8 @@ function PageLoadingOverlay({ open }: { open: boolean }) {
           <span className="absolute inset-0 animate-ping rounded-full ring-2 ring-sky-400/40" />
         </div>
 
-        <p className="mt-6 text-lg font-semibold text-blue-950">Just a moment</p>
-        <p className="mt-2 text-sm text-blue-800/75">
-          Preparing the next page for you…
-        </p>
+        <p className="mt-6 text-lg font-semibold text-blue-950">{title}</p>
+        <p className="mt-2 text-sm text-blue-800/75">{description}</p>
 
         <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-sky-100">
           <span className="block h-full w-full origin-left animate-[loading-bar_2.5s_ease-in-out_infinite] rounded-full bg-gradient-to-r from-sky-400 to-blue-500" />

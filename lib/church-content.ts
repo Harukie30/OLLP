@@ -1,38 +1,10 @@
-import { BookOpen, Heart, Music, Users, type LucideIcon } from "lucide-react"
-
-export type Service = {
-  title: string
-  time: string
-  description: string
-  icon: LucideIcon
-}
+import { Heart, Music, Users, type LucideIcon } from "lucide-react"
 
 export type Ministry = {
   title: string
   description: string
   icon: LucideIcon
 }
-
-export const services: Service[] = [
-  {
-    title: "Sunday Worship",
-    time: "6:00 AM - 8:00 PM",
-    description: "Main gathering with worship, teaching, and communion.",
-    icon: Music,
-  },
-  {
-    title: "Sunday Classes",
-    time: "9:00 AM",
-    description: "Bible study and groups for all ages before the service.",
-    icon: BookOpen,
-  },
-  {
-    title: "Midweek Prayer",
-    time: "Wed · 7:00 PM",
-    description: "A quieter evening of prayer and encouragement together.",
-    icon: Heart,
-  },
-]
 
 export const ministries: Ministry[] = [
   {

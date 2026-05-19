@@ -1,9 +1,11 @@
 import Image from "next/image"
 import Link from "next/link"
+import { Suspense } from "react"
 import { Clock, MapPin } from "lucide-react"
 
 import { SiteLogo } from "@/components/site-logo"
 import { SiteShell } from "@/components/site-shell"
+import { UpcomingEventsSection } from "@/components/upcoming-events-section"
 import { Button } from "@/components/ui/button"
 import { address, heroBackground, serviceSummary } from "@/lib/site"
 
@@ -66,6 +68,33 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <Suspense fallback={<UpcomingEventsFallback />}>
+        <UpcomingEventsSection />
+      </Suspense>
     </SiteShell>
+  )
+}
+
+function UpcomingEventsFallback() {
+  return (
+    <section
+      className="border-t border-blue-100 bg-gradient-to-b from-sky-50/30 via-white to-white py-16 sm:py-20"
+      aria-hidden
+    >
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="flex gap-4">
+          <div className="size-12 animate-pulse rounded-2xl bg-sky-100" />
+          <div className="space-y-2">
+            <div className="h-4 w-24 animate-pulse rounded bg-sky-100" />
+            <div className="h-8 w-56 animate-pulse rounded-lg bg-sky-100" />
+          </div>
+        </div>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2">
+          <div className="h-36 animate-pulse rounded-2xl bg-sky-100/80 sm:h-32" />
+          <div className="h-36 animate-pulse rounded-2xl bg-sky-100/80 sm:h-32" />
+        </div>
+      </div>
+    </section>
   )
 }
