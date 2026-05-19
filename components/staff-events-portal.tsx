@@ -15,6 +15,7 @@ import {
 } from "@/app/actions/staff-events"
 import { usePageLoading } from "@/components/page-loading-provider"
 import { FailedModal, SuccessModal } from "@/components/result-modal"
+import { StaffSignInDialog } from "@/components/staff-sign-in-dialog"
 import { TimePickerField } from "@/components/time-picker-field"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
@@ -133,46 +134,15 @@ export function StaffEventsPortal() {
 
   return (
     <>
-      <Dialog open={passwordOpen} onOpenChange={setPasswordOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Parish staff sign-in</DialogTitle>
-            <DialogDescription>
-              Enter the parish password to manage upcoming events. You stay on
-              this page.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3">
-            <label className="text-sm font-medium text-blue-950">
-              Password
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={cn(inputClassName, "mt-1.5")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleLogin()
-                }}
-                autoComplete="current-password"
-              />
-            </label>
-            {loginError ? (
-              <p className="text-sm text-destructive">{loginError}</p>
-            ) : null}
-            <Button
-              type="button"
-              onClick={() => void handleLogin()}
-              disabled={pending || !password}
-            >
-              {pending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                "Continue"
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <StaffSignInDialog
+        open={passwordOpen}
+        onOpenChange={setPasswordOpen}
+        password={password}
+        onPasswordChange={setPassword}
+        onSubmit={() => void handleLogin()}
+        error={loginError}
+        pending={pending}
+      />
 
       <FailedModal
         open={loginResult?.variant === "error"}
@@ -364,7 +334,7 @@ function StaffEventsEditor({
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="shrink-0 text-destructive"
+                      className="shrink-0 text-destructive cursor-pointer"
                       onClick={() => handleDelete(event.id, event.title)}
                       disabled={pending}
                       aria-label={`Delete ${event.title}`}
@@ -387,9 +357,13 @@ function StaffEventsEditor({
             }}
           >
             <p className="text-sm font-medium text-blue-950">Add event on this day</p>
+            <p className="text-xs text-muted-foreground">
+              Pick a start time for timed events (e.g. one-hour gatherings).
+              Leave times empty only for all-day events.
+            </p>
             <label className="block text-sm">
               Title
-              <input
+              <input  
                 name="title"
                 required
                 className={cn(inputClassName, "mt-1")}
@@ -401,13 +375,13 @@ function StaffEventsEditor({
                 name="time"
                 label="Start time"
                 optional
-                placeholder="Pick start time"
+                placeholder="Pick a time"
               />
               <TimePickerField
                 name="endTime"
                 label="End time"
                 optional
-                placeholder="Pick end time"
+                placeholder="Pick a time"
               />
             </div>
             <label className="block text-sm">
@@ -427,7 +401,7 @@ function StaffEventsEditor({
                 placeholder="Optional details"
               />
             </label>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" className="cursor-pointer" disabled={pending}>
               {pending ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
@@ -438,7 +412,7 @@ function StaffEventsEditor({
 
           <div className="flex flex-wrap gap-2 border-t border-sky-100 pt-3">
             
-            <Button className="bg-red-500 text-white shadow-sm shadow-red-500/25 cursor-pointer hover:bg-red-600" type="button" onClick={onLogout} disabled={pending}>
+            <Button className="bg-red-500  text-white shadow-sm shadow-red-500/25 cursor-pointer hover:bg-red-600" type="button" onClick={onLogout} disabled={pending}>
               Sign out
             </Button>
           </div>

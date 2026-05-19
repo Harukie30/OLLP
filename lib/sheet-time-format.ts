@@ -6,19 +6,72 @@ export type SheetTimeParts = {
   meridiem: "AM" | "PM"
 }
 
-const SHEET_TIME_RE = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
+function partsFrom24Hour(hours24: number, minute: number): SheetTimeParts | null {
+  if (hours24 < 0 || hours24 > 23 || minute < 0 || minute > 59) return null
 
-export function parseSheetTimeString(value: string): SheetTimeParts | null {
-  const match = value.trim().match(SHEET_TIME_RE)
-  if (!match) return null
-
-  const hour = Number(match[1])
-  const minute = Number(match[2])
-  const meridiem = match[3].toUpperCase() as "AM" | "PM"
-
-  if (hour < 1 || hour > 12 || minute < 0 || minute > 59) return null
+  const meridiem: "AM" | "PM" = hours24 >= 12 ? "PM" : "AM"
+  let hour = hours24 % 12
+  if (hour === 0) hour = 12
 
   return { hour, minute, meridiem }
+}
+
+/** Google Sheets time cells often come back as day-fractions (0.25 = 6:00 AM). */
+function parseSheetTimeFraction(value: string): SheetTimeParts | null {
+  const num = Number(value)
+  if (!Number.isFinite(num)) return null
+
+  const fraction = num >= 1 ? num % 1 : num
+  if (fraction <= 0 || fraction >= 1) return null
+
+  const totalMinutes = Math.round(fraction * 24 * 60) % (24 * 60)
+  const hours24 = Math.floor(totalMinutes / 60)
+  const minute = totalMinutes % 60
+
+  return partsFrom24Hour(hours24, minute)
+}
+
+export function parseSheetTimeString(value: string): SheetTimeParts | null {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  const fromFraction = parseSheetTimeFraction(trimmed)
+  if (fromFraction) return fromFraction
+
+  const twelveHour = trimmed.match(
+    /^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i
+  )
+  if (twelveHour) {
+    const hour = Number(twelveHour[1])
+    const minute = Number(twelveHour[2])
+    const meridiem = twelveHour[3].toUpperCase() as "AM" | "PM"
+    if (hour < 1 || hour > 12) return null
+    return { hour, minute, meridiem }
+  }
+
+  const twelveHourNoSpace = trimmed.match(/^(\d{1,2}):(\d{2})(AM|PM)$/i)
+  if (twelveHourNoSpace) {
+    const hour = Number(twelveHourNoSpace[1])
+    const minute = Number(twelveHourNoSpace[2])
+    const meridiem = twelveHourNoSpace[3].toUpperCase() as "AM" | "PM"
+    if (hour < 1 || hour > 12) return null
+    return { hour, minute, meridiem }
+  }
+
+  const hourOnly = trimmed.match(/^(\d{1,2})\s*(AM|PM)$/i)
+  if (hourOnly) {
+    const hour = Number(hourOnly[1])
+    const meridiem = hourOnly[2].toUpperCase() as "AM" | "PM"
+    if (hour < 1 || hour > 12) return null
+    return { hour, minute: 0, meridiem }
+  }
+
+  const twentyFourHour = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/)
+  if (twentyFourHour) {
+    return partsFrom24Hour(Number(twentyFourHour[1]), Number(twentyFourHour[2]))
+  }
+
+  return null
 }
 
 /** Canonical string written to the sheet and hidden form fields. */
@@ -95,4 +148,26 @@ export function formatTimeFromDate(date: Date): string {
   if (hour12 === 0) hour12 = 12
 
   return formatSheetTimeString({ hour: hour12, minute, meridiem })
+}
+
+/** Short range for cards, e.g. "6:00 PM – 7:00 PM". */
+export function formatEventTimeRange(
+  start: Date,
+  end?: Date,
+  allDay = false
+): string | null {
+  if (allDay) return null
+  if (!isValidDate(start)) return null
+
+  const startLabel = formatTimeFromDate(start)
+  if (!startLabel) return null
+
+  if (end && isValidDate(end)) {
+    const endLabel = formatTimeFromDate(end)
+    if (endLabel && endLabel !== startLabel) {
+      return `${startLabel} – ${endLabel}`
+    }
+  }
+
+  return startLabel
 }

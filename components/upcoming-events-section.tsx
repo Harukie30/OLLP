@@ -7,6 +7,7 @@ import { ArrowRight, CalendarDays, MapPin, Sparkles } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { formatParishEventWhen } from "@/lib/format-event-date"
+import { formatEventTimeRange } from "@/lib/sheet-time-format"
 import { getUpcomingParishEvents } from "@/lib/parish-events"
 import { getSampleParishEvents } from "@/lib/sample-parish-events"
 import type { ParishEvent } from "@/lib/parish-events"
@@ -122,6 +123,7 @@ function EventCard({ event }: { event: ParishEvent }) {
   const day = validStart ? format(start, "d") : "—"
   const month = validStart ? format(start, "MMM") : ""
   const weekday = validStart ? format(start, "EEE") : ""
+  const timeRange = formatEventTimeRange(event.start, event.end, event.allDay)
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-sm ring-1 ring-sky-50 transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-stretch">
@@ -149,6 +151,10 @@ function EventCard({ event }: { event: ParishEvent }) {
           >
             All day
           </Badge>
+        ) : timeRange ? (
+          <span className="mt-2 text-center text-[11px] font-semibold leading-tight text-primary">
+            {timeRange}
+          </span>
         ) : null}
       </div>
 

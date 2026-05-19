@@ -40,12 +40,15 @@ export function TimePickerField({
   optional = false,
   defaultValue = "",
   placeholder = "Pick a time",
+  emptyLabel,
 }: {
   name: string
   label: string
   optional?: boolean
   defaultValue?: string
   placeholder?: string
+  /** Shown when optional and cleared; defaults to placeholder. */
+  emptyLabel?: string
 }) {
   const parsed = defaultValue ? parseSheetTimeString(defaultValue) : null
   const [open, setOpen] = useState(false)
@@ -53,11 +56,15 @@ export function TimePickerField({
   const [minute, setMinute] = useState(parsed?.minute ?? 0)
   const [meridiem, setMeridiem] = useState<"AM" | "PM">(parsed?.meridiem ?? "PM")
   const [cleared, setCleared] = useState(!defaultValue)
+  const [clearedByUser, setClearedByUser] = useState(false)
 
   const displayValue = useMemo(() => {
     if (cleared) return ""
     return formatSheetTimeString({ hour, minute, meridiem })
   }, [cleared, hour, minute, meridiem])
+
+  const emptyDisplay =
+    optional && clearedByUser && emptyLabel ? emptyLabel : placeholder
 
   return (
     <div className="block text-sm">
@@ -74,7 +81,7 @@ export function TimePickerField({
             )}
           >
             <Clock className="size-4 shrink-0 text-primary" aria-hidden />
-            {displayValue || (optional ? "All day / none" : placeholder)}
+            {displayValue || emptyDisplay}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[min(100vw-2rem,20rem)] p-3" align="start">
@@ -97,6 +104,7 @@ export function TimePickerField({
                     setMinute(parts.minute)
                     setMeridiem(parts.meridiem)
                     setCleared(false)
+                    setClearedByUser(false)
                     setOpen(false)
                   }}
                 >
@@ -113,6 +121,7 @@ export function TimePickerField({
                 onChange={(e) => {
                   setHour(Number(e.target.value))
                   setCleared(false)
+                  setClearedByUser(false)
                 }}
                 className={cn(inputClassName, "mt-1")}
               >
@@ -130,6 +139,7 @@ export function TimePickerField({
                 onChange={(e) => {
                   setMinute(Number(e.target.value))
                   setCleared(false)
+                  setClearedByUser(false)
                 }}
                 className={cn(inputClassName, "mt-1")}
               >
@@ -147,6 +157,7 @@ export function TimePickerField({
                 onChange={(e) => {
                   setMeridiem(e.target.value as "AM" | "PM")
                   setCleared(false)
+                  setClearedByUser(false)
                 }}
                 className={cn(inputClassName, "mt-1")}
               >
@@ -166,6 +177,7 @@ export function TimePickerField({
                 variant="ghost"
                 onClick={() => {
                   setCleared(true)
+                  setClearedByUser(true)
                   setOpen(false)
                 }}
               >

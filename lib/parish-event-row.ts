@@ -1,12 +1,22 @@
 import type { ParishEvent } from "@/lib/parish-events"
 import {
   combineDateAndTime,
+  formatSheetTimeString,
   formatTimeFromDate,
   isValidDate,
   normalizeSheetTimeInput,
   parseLocalDateOnly,
   parseSheetTimeString,
 } from "@/lib/sheet-time-format"
+
+function sheetTimeFromCell(value: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return ""
+  const normalized = normalizeSheetTimeInput(trimmed)
+  if (normalized) return normalized
+  const parts = parseSheetTimeString(trimmed)
+  return parts ? formatSheetTimeString(parts) : ""
+}
 
 export type EventRow = Record<string, string>
 
@@ -38,6 +48,8 @@ export function normalizeRowKeys(row: EventRow): EventRow {
       normalized.title = value
     } else if (k === "end" || k === "endtime") {
       normalized.end_time = value
+    } else if (k === "start_time" || k === "starttime") {
+      normalized.time = value
     } else {
       normalized[k] = value
     }
@@ -54,8 +66,8 @@ export function parishEventFromRow(
   const datePart = parseDatePart(data.date ?? "")
   if (!title || !datePart) return null
 
-  const timeRaw = normalizeSheetTimeInput(data.time ?? "")
-  const endTimeRaw = normalizeSheetTimeInput(data.end_time ?? "")
+  const timeRaw = sheetTimeFromCell(data.time ?? "")
+  const endTimeRaw = sheetTimeFromCell(data.end_time ?? "")
   const allDay = !timeRaw
 
   const start = timeRaw
@@ -63,11 +75,11 @@ export function parishEventFromRow(
     : parseLocalDateOnly(datePart)
   if (!start || !isValidDate(start)) return null
 
+  const endCandidate = endTimeRaw
+    ? combineDateAndTime(datePart, endTimeRaw)
+    : undefined
   const end =
-    endTimeRaw && parseSheetTimeString(endTimeRaw)
-      ? combineDateAndTime(datePart, endTimeRaw)
-      : undefined
-  if (end && !isValidDate(end)) return null
+    endCandidate && isValidDate(endCandidate) ? endCandidate : undefined
 
   return {
     id: data.id?.trim() || `legacy-${index}-${datePart}-${title}`,
@@ -75,6 +87,7 @@ export function parishEventFromRow(
     description: data.description?.trim() || undefined,
     location: data.location?.trim() || undefined,
     start,
+    end,
     allDay,
   }
 }
