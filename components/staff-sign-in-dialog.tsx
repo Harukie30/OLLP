@@ -52,8 +52,7 @@ export function StaffSignInDialog({
               Parish staff sign-in
             </DialogTitle>
             <DialogDescription className="mx-auto mt-2 max-w-sm text-center text-pretty">
-              Authorized staff can update upcoming events on the parish website.
-              You&apos;ll stay on this page.
+            Authorized staff can update content on the parish website. You’ll stay on this page.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -112,8 +111,7 @@ export function StaffSignInDialog({
           <div className="flex items-start gap-2 rounded-lg border border-sky-100/90 bg-sky-50/60 px-3 py-2.5 text-xs text-muted-foreground">
             <Shield className="mt-0.5 size-4 shrink-0 text-sky-600" aria-hidden />
             <p className="text-pretty leading-relaxed">
-              For {churchFormalName} staff and volunteers with a parish-issued
-              password. Need access? Contact the parish office.
+            Access is limited to Shrine and Parish of Our Lady of Lourdes staff and volunteers with a valid parish-issued password. For access, please contact the parish office
             </p>
           </div>
 

@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Suspense } from "react"
 import { Clock, MapPin } from "lucide-react"
 
+import { HomeWelcomeWrap } from "@/components/home-welcome-wrap"
 import { SiteLogo } from "@/components/site-logo"
 import { SiteShell } from "@/components/site-shell"
 import { UpcomingEventsSection } from "@/components/upcoming-events-section"
@@ -11,6 +12,7 @@ import { address, heroBackground, serviceSummary } from "@/lib/site"
 
 export default function Home() {
   return (
+    <HomeWelcomeWrap>
     <SiteShell>
       <section className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden">
         <div aria-hidden className="absolute inset-0">
@@ -73,6 +75,7 @@ export default function Home() {
         <UpcomingEventsSection />
       </Suspense>
     </SiteShell>
+    </HomeWelcomeWrap>
   )
 }
 
