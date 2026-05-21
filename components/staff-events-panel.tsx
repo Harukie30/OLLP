@@ -2,30 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import { format } from "date-fns"
-import { Loader2, Trash2 } from "lucide-react"
+import { CalendarX2, Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import {
-  staffCheckSession,
   staffCreateEvent,
   staffDeleteEvent,
   staffListEvents,
-  staffLogin,
-  staffLogout,
 } from "@/app/actions/staff-events"
-import { usePageLoading } from "@/components/page-loading-provider"
+import { ConfirmAlertDialog } from "@/components/confirm-alert-dialog"
 import { FailedModal, SuccessModal } from "@/components/result-modal"
-import { StaffSignInDialog } from "@/components/staff-sign-in-dialog"
 import { TimePickerField } from "@/components/time-picker-field"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { parseLocalDateOnly } from "@/lib/sheet-time-format"
 import { inputClassName } from "@/lib/site"
 import { cn } from "@/lib/utils"
@@ -46,133 +35,15 @@ type ResultModalState = {
   description?: string
 } | null
 
-export function StaffEventsPortal() {
-  const [passwordOpen, setPasswordOpen] = useState(false)
-  const [editorOpen, setEditorOpen] = useState(false)
-  const [password, setPassword] = useState("")
-  const [loginError, setLoginError] = useState<string | null>(null)
-  const [loginResult, setLoginResult] = useState<ResultModalState>(null)
-  const [pending, startTransition] = useTransition()
-  const { startLoading, stopLoading } = usePageLoading()
-
-  const openPassword = useCallback(() => {
-    setPassword("")
-    setLoginError(null)
-    setLoginResult(null)
-    setPasswordOpen(true)
-  }, [])
-
-  useEffect(() => {
-    const onOpen = () => openPassword()
-    window.addEventListener("ollp-staff-open", onOpen)
-    return () => window.removeEventListener("ollp-staff-open", onOpen)
-  }, [openPassword])
-
-  const handleLogin = () => {
-    startTransition(async () => {
-      setLoginError(null)
-      setLoginResult(null)
-      startLoading({
-        title: "Signing you in",
-        description: "Verifying parish staff access…",
-        minMs: 700,
-      })
-
-      try {
-        const result = await staffLogin(password)
-
-        if (!result.ok) {
-          setLoginError(result.error)
-          setLoginResult({
-            variant: "error",
-            title: "Sign-in failed",
-            description: result.error,
-          })
-          await stopLoading()
-          toast.error(result.error)
-          return
-        }
-
-        await stopLoading()
-        toast.success("Signed in successfully", {
-          description: "You can now manage parish events.",
-        })
-        setPasswordOpen(false)
-        setEditorOpen(true)
-      } catch {
-        await stopLoading()
-        const message = "Something went wrong. Please try again."
-        setLoginError(message)
-        toast.error(message)
-        setLoginResult({
-          variant: "error",
-          title: "Sign-in failed",
-          description: message,
-        })
-      }
-    })
-  }
-
-  const handleLogout = () => {
-    startTransition(async () => {
-      await staffLogout()
-      setEditorOpen(false)
-    })
-  }
-
-  useEffect(() => {
-    if (!passwordOpen) return
-
-    void (async () => {
-      const { authenticated } = await staffCheckSession()
-      if (authenticated) {
-        setPasswordOpen(false)
-        setEditorOpen(true)
-      }
-    })()
-  }, [passwordOpen])
-
-  return (
-    <>
-      <StaffSignInDialog
-        open={passwordOpen}
-        onOpenChange={setPasswordOpen}
-        password={password}
-        onPasswordChange={setPassword}
-        onSubmit={() => void handleLogin()}
-        error={loginError}
-        pending={pending}
-      />
-
-      <FailedModal
-        open={loginResult?.variant === "error"}
-        onOpenChange={(open) => !open && setLoginResult(null)}
-        title={loginResult?.title ?? "Sign-in failed"}
-        description={loginResult?.description}
-      />
-
-      <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
-        <DialogContent className="max-w-3xl">
-          <StaffEventsEditor
-            onLogout={handleLogout}
-            onClose={() => setEditorOpen(false)}
-            pending={pending}
-            startTransition={startTransition}
-          />
-        </DialogContent>
-      </Dialog>
-    </>
-  )
+type DeleteEventConfirm = {
+  id: string
+  title: string
 }
 
-function StaffEventsEditor({
-  onLogout,
-  onClose,
+export function StaffEventsPanel({
   pending,
   startTransition,
 }: {
-  onLogout: () => void
-  onClose: () => void
   pending: boolean
   startTransition: (fn: () => void | Promise<void>) => void
 }) {
@@ -181,6 +52,9 @@ function StaffEventsEditor({
   const [calendarReady, setCalendarReady] = useState(false)
   const [formKey, setFormKey] = useState(0)
   const [resultModal, setResultModal] = useState<ResultModalState>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<DeleteEventConfirm | null>(
+    null
+  )
 
   useEffect(() => {
     setSelected(new Date())
@@ -242,8 +116,9 @@ function StaffEventsEditor({
     })
   }
 
-  const handleDelete = (id: string, title: string) => {
-    if (!window.confirm("Delete this event?")) return
+  const runDeleteEvent = () => {
+    if (!deleteConfirm) return
+    const { id, title } = deleteConfirm
     startTransition(async () => {
       const result = await staffDeleteEvent(id)
       if (!result.ok) {
@@ -262,21 +137,19 @@ function StaffEventsEditor({
         title: "Event deleted",
         description: title,
       })
+      setDeleteConfirm(null)
       loadEvents()
     })
   }
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>Manage parish events</DialogTitle>
-        <DialogDescription>
-          Pick a day on the calendar, then add or remove events. Changes appear
-          on the home page.
-        </DialogDescription>
-      </DialogHeader>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Pick a day on the calendar, then add or remove events. Changes appear on
+        the home page.
+      </p>
 
-      <div className="grid gap-6 md:grid-cols-[minmax(0,280px)_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,300px)_1fr]">
         <div className="rounded-xl border border-sky-100 bg-sky-50/40 p-2">
           {calendarReady ? (
             <Calendar
@@ -334,8 +207,10 @@ function StaffEventsEditor({
                       type="button"
                       variant="outline"
                       size="icon"
-                      className="shrink-0 text-destructive cursor-pointer"
-                      onClick={() => handleDelete(event.id, event.title)}
+                      className="shrink-0 cursor-pointer text-destructive"
+                      onClick={() =>
+                        setDeleteConfirm({ id: event.id, title: event.title })
+                      }
                       disabled={pending}
                       aria-label={`Delete ${event.title}`}
                     >
@@ -356,14 +231,16 @@ function StaffEventsEditor({
               handleCreate(new FormData(e.currentTarget))
             }}
           >
-            <p className="text-sm font-medium text-blue-950">Add event on this day</p>
+            <p className="text-sm font-medium text-blue-950">
+              Add event on this day
+            </p>
             <p className="text-xs text-muted-foreground">
-              Pick a start time for timed events (e.g. one-hour gatherings).
-              Leave times empty only for all-day events.
+              Pick a start time for timed events. Leave times empty only for
+              all-day events.
             </p>
             <label className="block text-sm">
               Title
-              <input  
+              <input
                 name="title"
                 required
                 className={cn(inputClassName, "mt-1")}
@@ -409,13 +286,6 @@ function StaffEventsEditor({
               )}
             </Button>
           </form>
-
-          <div className="flex flex-wrap gap-2 border-t border-sky-100 pt-3">
-            
-            <Button className="bg-red-500  text-white shadow-sm shadow-red-500/25 cursor-pointer hover:bg-red-600" type="button" onClick={onLogout} disabled={pending}>
-              Sign out
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -430,6 +300,21 @@ function StaffEventsEditor({
         onOpenChange={(open) => !open && setResultModal(null)}
         title={resultModal?.title ?? "Something went wrong"}
         description={resultModal?.description}
+      />
+
+      <ConfirmAlertDialog
+        open={deleteConfirm !== null}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        title="Delete this event?"
+        description={
+          deleteConfirm
+            ? `“${deleteConfirm.title}” will be removed from the home page. This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete event"
+        icon={<CalendarX2 className="text-destructive" aria-hidden />}
+        onConfirm={runDeleteEvent}
+        pending={pending}
       />
     </>
   )

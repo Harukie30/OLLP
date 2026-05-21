@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ParishEvent {
+  id          String   @id @default(uuid())
+  title       String
+  date        String
+  time        String   @default("")
+  endTime     String   @default("") @map("end_time")
+  location    String   @default("")
+  description String   @default("")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("parish_events")
+}
+
+model WeddingAppointment {
+  idUser       String    @id @map("id_user")
+  name         String
+  email        String
+  phone        String?
+  partnerName  String    @map("partner_name")
+  intendedDate String?   @map("intended_date")
+  message      String?
+  submittedAt  DateTime  @default(now()) @map("submitted_at")
+  status       String    @default("pending")
+  acceptedAt   DateTime? @map("accepted_at")
+
+  @@map("wedding_appointments")
+}

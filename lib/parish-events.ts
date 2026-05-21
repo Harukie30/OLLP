@@ -1,6 +1,9 @@
 import "server-only"
 
-import { getSheetDbParishEvents, isSheetDbConfigured } from "@/lib/sheetdb"
+import { unstable_noStore as noStore } from "next/cache"
+
+import { isDatabaseConfigured } from "@/lib/db"
+import { getUpcomingParishEventsFromDb } from "@/lib/parish-events-db"
 
 export type ParishEvent = {
   id: string
@@ -12,7 +15,7 @@ export type ParishEvent = {
   allDay: boolean
 }
 
-export type ParishEventsSource = "sheetdb" | "none"
+export type ParishEventsSource = "database" | "none"
 
 const DEFAULT_LIMIT = 4
 
@@ -20,13 +23,15 @@ export async function getUpcomingParishEvents(limit = DEFAULT_LIMIT): Promise<{
   events: ParishEvent[]
   source: ParishEventsSource
 }> {
-  if (!isSheetDbConfigured()) {
+  noStore()
+
+  if (!isDatabaseConfigured()) {
     return { events: [], source: "none" }
   }
 
-  const events = await getSheetDbParishEvents()
+  const events = await getUpcomingParishEventsFromDb(limit)
   return {
-    events: events.slice(0, limit),
-    source: "sheetdb",
+    events,
+    source: "database",
   }
 }

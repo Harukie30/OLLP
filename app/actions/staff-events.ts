@@ -4,10 +4,16 @@ import { revalidatePath } from "next/cache"
 
 import { parseDatePart, parishEventToDto } from "@/lib/parish-event-row"
 import {
-  createSheetDbEvent,
-  deleteSheetDbEvent,
-  getAllSheetDbParishEvents,
-} from "@/lib/sheetdb"
+  createParishEventInDb,
+  deleteParishEventInDb,
+  getAllParishEventsFromDb,
+} from "@/lib/parish-events-db"
+import {
+  acceptWeddingAppointment,
+  deleteWeddingAppointment,
+  fetchWeddingAppointments,
+  rejectWeddingAppointment,
+} from "@/lib/wedding-appointment"
 import {
   clearStaffSession,
   isStaffAuthenticated,
@@ -37,7 +43,7 @@ export async function staffListEvents() {
   if (!(await isStaffAuthenticated())) {
     return { ok: false as const, error: "Not signed in." }
   }
-  const events = await getAllSheetDbParishEvents()
+  const events = await getAllParishEventsFromDb()
   return {
     ok: true as const,
     events: events
@@ -69,7 +75,7 @@ export async function staffCreateEvent(formData: FormData) {
     }
   }
 
-  const result = await createSheetDbEvent({
+  const result = await createParishEventInDb({
     title,
     date,
     time: time || undefined,
@@ -82,7 +88,67 @@ export async function staffCreateEvent(formData: FormData) {
     return { ok: false as const, error: result.error ?? "Could not save." }
   }
 
-  revalidatePath("/")
+  revalidatePath("/", "page")
+  return { ok: true as const }
+}
+
+export async function staffListWeddingAppointments() {
+  if (!(await isStaffAuthenticated())) {
+    return { ok: false as const, error: "Not signed in." }
+  }
+
+  const appointments = await fetchWeddingAppointments()
+  return { ok: true as const, appointments }
+}
+
+export async function staffRejectWeddingAppointment(idUser: string) {
+  if (!(await isStaffAuthenticated())) {
+    return { ok: false as const, error: "Not signed in." }
+  }
+
+  if (!idUser.trim()) {
+    return { ok: false as const, error: "Invalid request id." }
+  }
+
+  const result = await rejectWeddingAppointment(idUser)
+  if (!result.ok) {
+    return { ok: false as const, error: result.error ?? "Could not reject." }
+  }
+
+  return { ok: true as const }
+}
+
+export async function staffDeleteWeddingAppointment(idUser: string) {
+  if (!(await isStaffAuthenticated())) {
+    return { ok: false as const, error: "Not signed in." }
+  }
+
+  if (!idUser.trim()) {
+    return { ok: false as const, error: "Invalid request id." }
+  }
+
+  const result = await deleteWeddingAppointment(idUser)
+  if (!result.ok) {
+    return { ok: false as const, error: result.error ?? "Could not delete." }
+  }
+
+  return { ok: true as const }
+}
+
+export async function staffAcceptWeddingAppointment(idUser: string) {
+  if (!(await isStaffAuthenticated())) {
+    return { ok: false as const, error: "Not signed in." }
+  }
+
+  if (!idUser.trim()) {
+    return { ok: false as const, error: "Invalid request id." }
+  }
+
+  const result = await acceptWeddingAppointment(idUser)
+  if (!result.ok) {
+    return { ok: false as const, error: result.error ?? "Could not accept." }
+  }
+
   return { ok: true as const }
 }
 
@@ -91,11 +157,11 @@ export async function staffDeleteEvent(id: string) {
     return { ok: false as const, error: "Not signed in." }
   }
 
-  const result = await deleteSheetDbEvent(id)
+  const result = await deleteParishEventInDb(id)
   if (!result.ok) {
     return { ok: false as const, error: result.error ?? "Could not delete." }
   }
 
-  revalidatePath("/")
+  revalidatePath("/", "page")
   return { ok: true as const }
 }

@@ -1,0 +1,5 @@
+import "server-only"
+
+export function isDatabaseConfigured(): boolean {
+  return Boolean(process.env.DATABASE_URL?.trim())
+}

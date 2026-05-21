@@ -3,6 +3,8 @@ import "server-only"
 import { createHmac, timingSafeEqual } from "node:crypto"
 import { cookies } from "next/headers"
 
+import { isDatabaseConfigured } from "@/lib/db"
+
 const COOKIE_NAME = "ollp_staff_events"
 
 function getSessionToken(): string | null {
@@ -13,7 +15,7 @@ function getSessionToken(): string | null {
 
 export function isStaffPortalConfigured(): boolean {
   return Boolean(
-    process.env.STAFF_EVENTS_PASSWORD?.trim() && process.env.SHEETDB_API_URL?.trim()
+    process.env.STAFF_EVENTS_PASSWORD?.trim() && isDatabaseConfigured()
   )
 }
 

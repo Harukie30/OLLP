@@ -79,13 +79,13 @@ export async function UpcomingEventsSection() {
               <Sparkles className="size-4 shrink-0" aria-hidden />
               Sample preview — set{" "}
               <code className="rounded bg-white/80 px-1.5 py-0.5 text-xs">
-                SHEETDB_API_URL
+                DATABASE_URL
               </code>{" "}
               in <code className="rounded bg-white/80 px-1.5 py-0.5 text-xs">.env.local</code>
             </p>
           ) : null}
 
-          {result.source === "sheetdb" && events.length === 0 ? (
+          {result.source === "database" && events.length === 0 ? (
             <EventsEmptyState message="No upcoming events scheduled at this time. Check back soon or ask at the parish office." />
           ) : events.length > 0 ? (
             <ul className="grid gap-5 sm:grid-cols-2">
@@ -96,7 +96,7 @@ export async function UpcomingEventsSection() {
               ))}
             </ul>
           ) : result.source === "none" ? (
-            <EventsEmptyState message="Events will appear here once SheetDB is connected." />
+            <EventsEmptyState message="Events will appear here once the database is configured." />
           ) : null}
         </div>
       </div>

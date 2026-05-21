@@ -91,7 +91,7 @@ export const sacramentalBookings: SacramentalBooking[] = [
       "Prepare for the Sacrament of Matrimony with our parish team. We’ll walk you through requirements, paperwork, and marriage preparation.",
     leadTime: "Contact the parish office at least 6 months before your intended date.",
     icon: Heart,
-    cta: { label: "Request wedding information", href: "/plan-a-visit" },
+    cta: { label: "Request wedding appointment", href: "/plan-a-visit" },
   },
   {
     title: "Baptisms",

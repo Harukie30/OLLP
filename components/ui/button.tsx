@@ -9,17 +9,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "bg-sky-500 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-400 focus-visible:ring-sky-400/50 [a]:hover:bg-sky-400",
+        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         outline:
-          "border-blue-500 bg-white text-blue-600 hover:bg-sky-50 hover:text-blue-700 aria-expanded:bg-sky-50 dark:border-sky-400 dark:bg-transparent dark:text-sky-200 dark:hover:bg-sky-950/50",
+          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
-          "bg-sky-100 text-blue-700 hover:bg-sky-200 aria-expanded:bg-sky-200 aria-expanded:text-blue-800 dark:bg-sky-950 dark:text-sky-200 dark:hover:bg-sky-900",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-blue-600 underline-offset-4 hover:text-sky-600 hover:underline",
+        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
         default:

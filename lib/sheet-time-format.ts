@@ -86,6 +86,72 @@ export function normalizeSheetTimeInput(value: string): string {
   return parts ? formatSheetTimeString(parts) : ""
 }
 
+/**
+ * Normalize a wedding/event date cell from SheetDB.
+ * Sheets often return ISO dates as serial numbers (e.g. 45321) or locale strings.
+ */
+export function sheetDateFromCell(
+  value: string | number | undefined | null
+): string | null {
+  if (value === undefined || value === null) return null
+  const trimmed = String(value).trim()
+  if (!trimmed) return null
+
+  const dashed = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
+  if (dashed) {
+    const [, year, month, day] = dashed
+    const datePart = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+    return parseLocalDateOnly(datePart) ? datePart : null
+  }
+
+  const slash = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (slash) {
+    const [, month, day, year] = slash
+    const datePart = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+    return parseLocalDateOnly(datePart) ? datePart : null
+  }
+
+  const num = Number(trimmed)
+  if (Number.isFinite(num) && num >= 1) {
+    const wholeDays = Math.floor(num)
+    if (wholeDays >= 1) {
+      const epoch = Date.UTC(1899, 11, 30)
+      const d = new Date(epoch + wholeDays * 86400000)
+      if (!Number.isNaN(d.getTime())) {
+        const y = d.getUTCFullYear()
+        const m = String(d.getUTCMonth() + 1).padStart(2, "0")
+        const day = String(d.getUTCDate()).padStart(2, "0")
+        const datePart = `${y}-${m}-${day}`
+        if (parseLocalDateOnly(datePart)) return datePart
+      }
+    }
+  }
+
+  const parsed = Date.parse(trimmed)
+  if (!Number.isNaN(parsed)) {
+    const d = new Date(parsed)
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, "0")
+    const day = String(d.getDate()).padStart(2, "0")
+    const datePart = `${y}-${m}-${day}`
+    return parseLocalDateOnly(datePart) ? datePart : null
+  }
+
+  return null
+}
+
+/** Human-readable date for Google Sheets so cells stay readable (not serial numbers). */
+export function formatIntendedDateForSheet(isoDate: string): string {
+  const datePart = sheetDateFromCell(isoDate)
+  const d = datePart ? parseLocalDateOnly(datePart) : null
+  if (!d) return isoDate
+  return d.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
+}
+
 export function parseLocalDateOnly(datePart: string): Date | null {
   const match = datePart.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/)
   if (!match) return null

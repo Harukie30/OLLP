@@ -44,7 +44,7 @@ export function normalizeRowKeys(row: EventRow): EventRow {
   const normalized: EventRow = {}
   for (const [key, value] of Object.entries(row)) {
     const k = key.trim().toLowerCase().replace(/\s+/g, "_")
-    if (k === "event" || k === "event_title" || k === "name") {
+    if (k === "event" || k === "event_title" || k === "title") {
       normalized.title = value
     } else if (k === "end" || k === "endtime") {
       normalized.end_time = value
@@ -62,9 +62,13 @@ export function parishEventFromRow(
   index: number
 ): ParishEvent | null {
   const data = normalizeRowKeys(row)
+  const eventId = data.id?.trim()
   const title = data.title?.trim()
   const datePart = parseDatePart(data.date ?? "")
-  if (!title || !datePart) return null
+
+  // Wedding rows use id_user + name; skip them on the events sheet/tab.
+  if (data.id_user?.trim()) return null
+  if (!eventId || !title || !datePart) return null
 
   const timeRaw = sheetTimeFromCell(data.time ?? "")
   const endTimeRaw = sheetTimeFromCell(data.end_time ?? "")
@@ -82,7 +86,7 @@ export function parishEventFromRow(
     endCandidate && isValidDate(endCandidate) ? endCandidate : undefined
 
   return {
-    id: data.id?.trim() || `legacy-${index}-${datePart}-${title}`,
+    id: eventId,
     title,
     description: data.description?.trim() || undefined,
     location: data.location?.trim() || undefined,
