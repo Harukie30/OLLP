@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react"
 import Link from "next/link"
-import { CalendarDays, Heart, Loader2 } from "lucide-react"
+import { CalendarDays, CalendarHeart, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -14,12 +14,13 @@ import { usePageLoading } from "@/components/page-loading-provider"
 import { FailedModal } from "@/components/result-modal"
 import { StaffEventsPanel } from "@/components/staff-events-panel"
 import { StaffSignInScreen } from "@/components/staff-sign-in-screen"
-import { StaffWeddingAppointmentsPanel } from "@/components/staff-wedding-appointments-panel"
+import { StaffAppointmentsProvider } from "@/components/staff-appointments-data"
+import { StaffAppointmentsPanel } from "@/components/staff-appointments-panel"
 import { Button } from "@/components/ui/button"
 import { churchFormalName } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
-type StaffTab = "events" | "weddings"
+type StaffTab = "events" | "appointments"
 
 type ResultModalState = {
   variant: "error"
@@ -135,7 +136,8 @@ export function StaffDashboard() {
             {churchFormalName}
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-            Manage upcoming events and review wedding appointment requests.
+            Manage parish events and wedding/baptism requests on the
+            Appointments tab (Active and Rejected tables).
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -155,7 +157,7 @@ export function StaffDashboard() {
       </div>
 
       <div
-        className="inline-flex w-full max-w-md gap-1.5 rounded-xl border border-sky-100 bg-sky-50/50 p-1"
+        className="inline-flex w-full max-w-2xl gap-1.5 rounded-xl border border-sky-100 bg-sky-50/50 p-1"
         role="tablist"
         aria-label="Staff sections"
       >
@@ -177,17 +179,17 @@ export function StaffDashboard() {
         <button
           type="button"
           role="tab"
-          aria-selected={tab === "weddings"}
+          aria-selected={tab === "appointments"}
           className={cn(
             "inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-            tab === "weddings"
+            tab === "appointments"
               ? "bg-primary text-primary-foreground shadow-sm"
               : "text-blue-950/80 hover:bg-white"
           )}
-          onClick={() => setTab("weddings")}
+          onClick={() => setTab("appointments")}
         >
-          <Heart className="size-4 shrink-0" aria-hidden />
-          Weddings
+          <CalendarHeart className="size-4 shrink-0" aria-hidden />
+          Appointments
         </button>
       </div>
 
@@ -201,10 +203,12 @@ export function StaffDashboard() {
             startTransition={startTransition}
           />
         ) : (
-          <StaffWeddingAppointmentsPanel
-            pending={pending}
-            startTransition={startTransition}
-          />
+          <StaffAppointmentsProvider>
+            <StaffAppointmentsPanel
+              pending={pending}
+              startTransition={startTransition}
+            />
+          </StaffAppointmentsProvider>
         )}
       </div>
     </div>

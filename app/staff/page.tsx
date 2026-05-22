@@ -15,8 +15,12 @@ export default function StaffPage() {
 
   return (
     <SiteShell hideVisitCta>
-      <section className="py-8 sm:py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <section className="relative min-h-[calc(100vh-5rem)] overflow-hidden bg-gradient-to-br from-sky-200/45 via-sky-100/55 to-sky-50 py-10 sm:py-14">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgb(59_130_246/0.1),transparent_55%)]"
+        />
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
           {!configured ? (
             <div className="mx-auto max-w-lg rounded-2xl border border-amber-200 bg-amber-50 px-6 py-8 text-center">
               <h1 className="text-lg font-semibold text-amber-950">

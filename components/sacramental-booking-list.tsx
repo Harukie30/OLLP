@@ -4,14 +4,17 @@ import { useState } from "react"
 import Link from "next/link"
 import { Sparkles } from "lucide-react"
 
+import { BaptismAppointmentModal } from "@/components/baptism-appointment-modal"
 import { WeddingAppointmentModal } from "@/components/wedding-appointment-modal"
 import { Button } from "@/components/ui/button"
 import { sacramentalBookings } from "@/lib/services-schedule"
 
 const WEDDING_TITLE = "Weddings"
+const BAPTISM_TITLE = "Baptisms"
 
 export function SacramentalBookingList() {
   const [weddingModalOpen, setWeddingModalOpen] = useState(false)
+  const [baptismModalOpen, setBaptismModalOpen] = useState(false)
 
   return (
     <>
@@ -52,6 +55,15 @@ export function SacramentalBookingList() {
                 >
                   Request wedding appointment
                 </Button>
+              ) : item.title === BAPTISM_TITLE ? (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => setBaptismModalOpen(true)}
+                >
+                  Request baptism appointment
+                </Button>
               ) : (
                 <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
                   <Link href={item.cta.href}>{item.cta.label}</Link>
@@ -65,6 +77,10 @@ export function SacramentalBookingList() {
       <WeddingAppointmentModal
         open={weddingModalOpen}
         onOpenChange={setWeddingModalOpen}
+      />
+      <BaptismAppointmentModal
+        open={baptismModalOpen}
+        onOpenChange={setBaptismModalOpen}
       />
     </>
   )

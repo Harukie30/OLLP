@@ -9,6 +9,12 @@ import {
   getAllParishEventsFromDb,
 } from "@/lib/parish-events-db"
 import {
+  acceptBaptismAppointment,
+  deleteBaptismAppointment,
+  fetchBaptismAppointments,
+  rejectBaptismAppointment,
+} from "@/lib/baptism-appointment"
+import {
   acceptWeddingAppointment,
   deleteWeddingAppointment,
   fetchWeddingAppointments,
@@ -145,6 +151,66 @@ export async function staffAcceptWeddingAppointment(idUser: string) {
   }
 
   const result = await acceptWeddingAppointment(idUser)
+  if (!result.ok) {
+    return { ok: false as const, error: result.error ?? "Could not accept." }
+  }
+
+  return { ok: true as const }
+}
+
+export async function staffListBaptismAppointments() {
+  if (!(await isStaffAuthenticated())) {
+    return { ok: false as const, error: "Not signed in." }
+  }
+
+  const appointments = await fetchBaptismAppointments()
+  return { ok: true as const, appointments }
+}
+
+export async function staffRejectBaptismAppointment(idUser: string) {
+  if (!(await isStaffAuthenticated())) {
+    return { ok: false as const, error: "Not signed in." }
+  }
+
+  if (!idUser.trim()) {
+    return { ok: false as const, error: "Invalid request id." }
+  }
+
+  const result = await rejectBaptismAppointment(idUser)
+  if (!result.ok) {
+    return { ok: false as const, error: result.error ?? "Could not reject." }
+  }
+
+  return { ok: true as const }
+}
+
+export async function staffDeleteBaptismAppointment(idUser: string) {
+  if (!(await isStaffAuthenticated())) {
+    return { ok: false as const, error: "Not signed in." }
+  }
+
+  if (!idUser.trim()) {
+    return { ok: false as const, error: "Invalid request id." }
+  }
+
+  const result = await deleteBaptismAppointment(idUser)
+  if (!result.ok) {
+    return { ok: false as const, error: result.error ?? "Could not delete." }
+  }
+
+  return { ok: true as const }
+}
+
+export async function staffAcceptBaptismAppointment(idUser: string) {
+  if (!(await isStaffAuthenticated())) {
+    return { ok: false as const, error: "Not signed in." }
+  }
+
+  if (!idUser.trim()) {
+    return { ok: false as const, error: "Invalid request id." }
+  }
+
+  const result = await acceptBaptismAppointment(idUser)
   if (!result.ok) {
     return { ok: false as const, error: result.error ?? "Could not accept." }
   }

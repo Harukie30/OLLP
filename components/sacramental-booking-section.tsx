@@ -17,8 +17,8 @@ export function SacramentalBookingSection() {
           Weddings, baptisms, and pastoral care
         </h2>
         <p className="mt-3 text-muted-foreground">
-          These moments matter. Start a conversation with the parish office so we can
-          plan dates, paperwork, and preparation together.
+          These moments matter. Wedding and baptism requests are saved as parish
+          appointments for staff to review—use the buttons below to submit your details.
         </p>
       </div>
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import { format, parseISO } from "date-fns"
 import {
-  CalendarHeart,
+  Baby,
   Check,
   HeartOff,
   Loader2,
@@ -15,10 +15,10 @@ import {
 import { toast } from "sonner"
 
 import {
-  staffAcceptWeddingAppointment,
-  staffDeleteWeddingAppointment,
-  staffListWeddingAppointments,
-  staffRejectWeddingAppointment,
+  staffAcceptBaptismAppointment,
+  staffDeleteBaptismAppointment,
+  staffListBaptismAppointments,
+  staffRejectBaptismAppointment,
 } from "@/app/actions/staff-events"
 import { ConfirmAlertDialog } from "@/components/confirm-alert-dialog"
 import { StaffAppointmentStatusFilter } from "@/components/staff-appointment-status-filter"
@@ -38,7 +38,7 @@ import {
   filterAppointmentsByStatus,
   type AppointmentStatusFilter,
 } from "@/lib/appointment-status-filter"
-import type { WeddingAppointmentDto } from "@/lib/wedding-appointment-types"
+import type { BaptismAppointmentDto } from "@/lib/baptism-appointment-types"
 import { cn } from "@/lib/utils"
 
 function formatSubmittedAt(iso?: string): string {
@@ -62,30 +62,30 @@ function formatIntendedDate(date?: string): string {
   return format(parsed, "MMM d, yyyy")
 }
 
-export function StaffWeddingAppointmentsPanel({
+export function StaffBaptismAppointmentsPanel({
   pending,
   startTransition,
 }: {
   pending: boolean
   startTransition: (fn: () => void | Promise<void>) => void
 }) {
-  const [appointments, setAppointments] = useState<WeddingAppointmentDto[]>([])
+  const [appointments, setAppointments] = useState<BaptismAppointmentDto[]>([])
   const [statusFilter, setStatusFilter] =
     useState<AppointmentStatusFilter>("all")
   const [loading, setLoading] = useState(true)
   const [, startLoad] = useTransition()
   const [deleteConfirm, setDeleteConfirm] =
-    useState<WeddingAppointmentDto | null>(null)
+    useState<BaptismAppointmentDto | null>(null)
   const [rejectConfirm, setRejectConfirm] =
-    useState<WeddingAppointmentDto | null>(null)
+    useState<BaptismAppointmentDto | null>(null)
 
   const loadAppointments = useCallback(() => {
     startLoad(async () => {
       setLoading(true)
-      const result = await staffListWeddingAppointments()
+      const result = await staffListBaptismAppointments()
       setLoading(false)
       if (!result.ok) {
-        toast.error(result.error ?? "Could not load wedding appointments.")
+        toast.error(result.error ?? "Could not load baptism requests.")
         return
       }
       setAppointments(result.appointments)
@@ -112,16 +112,16 @@ export function StaffWeddingAppointmentsPanel({
     })
   }
 
-  const handleAccept = (item: WeddingAppointmentDto) => {
+  const handleAccept = (item: BaptismAppointmentDto) => {
     if (item.status !== "pending") return
     startTransition(async () => {
-      const result = await staffAcceptWeddingAppointment(item.idUser)
+      const result = await staffAcceptBaptismAppointment(item.idUser)
       if (!result.ok) {
         toast.error(result.error ?? "Could not accept request.")
         return
       }
       toast.success("Request accepted", {
-        description: `${item.name} & ${item.partnerName}`,
+        description: `${item.childName} · ${item.name}`,
       })
       loadAppointments()
     })
@@ -131,13 +131,13 @@ export function StaffWeddingAppointmentsPanel({
     if (!deleteConfirm) return
     const item = deleteConfirm
     startTransition(async () => {
-      const result = await staffDeleteWeddingAppointment(item.idUser)
+      const result = await staffDeleteBaptismAppointment(item.idUser)
       if (!result.ok) {
         toast.error(result.error ?? "Could not delete request.")
         return
       }
       toast.success("Request removed", {
-        description: `${item.name} & ${item.partnerName}`,
+        description: `${item.childName} · ${item.name}`,
       })
       setDeleteConfirm(null)
       loadAppointments()
@@ -148,13 +148,13 @@ export function StaffWeddingAppointmentsPanel({
     if (!rejectConfirm) return
     const item = rejectConfirm
     startTransition(async () => {
-      const result = await staffRejectWeddingAppointment(item.idUser)
+      const result = await staffRejectBaptismAppointment(item.idUser)
       if (!result.ok) {
         toast.error(result.error ?? "Could not reject request.")
         return
       }
       toast.success("Request rejected", {
-        description: `${item.name} & ${item.partnerName}`,
+        description: `${item.childName} · ${item.name}`,
       })
       setRejectConfirm(null)
       loadAppointments()
@@ -165,12 +165,12 @@ export function StaffWeddingAppointmentsPanel({
     <div className="flex min-h-0 flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <p className="max-w-xl text-sm text-muted-foreground">
-          One list for all wedding requests. Rejected and accepted stay here—use
+          One list for all baptism requests. Rejected and accepted stay here—use
           the filter to focus on pending, accepted, or rejected.
         </p>
         <div className="flex flex-wrap items-end gap-2">
           <StaffAppointmentStatusFilter
-            id="wedding-status-filter"
+            id="baptism-status-filter"
             value={statusFilter}
             onChange={setStatusFilter}
             counts={statusCounts}
@@ -200,26 +200,18 @@ export function StaffWeddingAppointmentsPanel({
         </div>
       ) : appointments.length === 0 ? (
         <div className="rounded-xl border border-dashed border-sky-200 bg-sky-50/40 px-6 py-12 text-center">
-          <CalendarHeart
-            className="mx-auto size-10 text-primary/60"
-            aria-hidden
-          />
-          <p className="mt-3 font-medium text-blue-950">
-            No wedding requests yet
-          </p>
+          <Baby className="mx-auto size-10 text-primary/60" aria-hidden />
+          <p className="mt-3 font-medium text-blue-950">No baptism requests yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            When couples submit the form on the Services page, they will appear
+            When families submit the form on the Services page, they will appear
             here.
           </p>
         </div>
       ) : filteredAppointments.length === 0 ? (
         <div className="rounded-xl border border-dashed border-sky-200 bg-sky-50/40 px-6 py-12 text-center">
-          <CalendarHeart
-            className="mx-auto size-10 text-primary/60"
-            aria-hidden
-          />
+          <Baby className="mx-auto size-10 text-primary/60" aria-hidden />
           <p className="mt-3 font-medium text-blue-950">
-            {appointmentFilterEmptyMessage(statusFilter, "wedding")}
+            {appointmentFilterEmptyMessage(statusFilter, "baptism")}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             Try another filter, or choose &ldquo;All requests&rdquo; to see
@@ -233,8 +225,8 @@ export function StaffWeddingAppointmentsPanel({
               <TableRow className="hover:bg-transparent">
                 <TableHead>Status</TableHead>
                 <TableHead>Submitted</TableHead>
-                <TableHead>Couple</TableHead>
-                <TableHead>Intended date</TableHead>
+                <TableHead>Family</TableHead>
+                <TableHead>Preferred date</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead className="min-w-[10rem] whitespace-normal">
                   Message
@@ -287,10 +279,10 @@ export function StaffWeddingAppointmentsPanel({
                     </TableCell>
                     <TableCell className="align-top">
                       <span className="block font-medium text-blue-950">
-                        {item.name}
+                        {item.childName}
                       </span>
                       <span className="text-muted-foreground">
-                        &amp; {item.partnerName}
+                        Parent: {item.name}
                       </span>
                     </TableCell>
                     <TableCell className="align-top">
@@ -315,9 +307,7 @@ export function StaffWeddingAppointmentsPanel({
                             {item.phone}
                           </a>
                         ) : (
-                          <span className="text-xs text-muted-foreground">
-                            —
-                          </span>
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </div>
                     </TableCell>
@@ -339,11 +329,6 @@ export function StaffWeddingAppointmentsPanel({
                           className="cursor-pointer border-emerald-200 text-emerald-800 hover:bg-emerald-50"
                           disabled={pending || !isPending}
                           onClick={() => handleAccept(item)}
-                          title={
-                            isPending
-                              ? "Mark as accepted"
-                              : "Only pending requests can be accepted"
-                          }
                         >
                           <Check className="size-4" aria-hidden />
                           Accept
@@ -355,11 +340,6 @@ export function StaffWeddingAppointmentsPanel({
                           className="cursor-pointer border-red-200 text-red-800 hover:bg-red-50"
                           disabled={pending || !isPending}
                           onClick={() => setRejectConfirm(item)}
-                          title={
-                            isPending
-                              ? "Reject this request"
-                              : "Only pending requests can be rejected"
-                          }
                         >
                           <HeartOff className="size-4" aria-hidden />
                           Reject
@@ -391,7 +371,7 @@ export function StaffWeddingAppointmentsPanel({
         title="Delete this request?"
         description={
           deleteConfirm
-            ? `Permanently remove the wedding request from ${deleteConfirm.name} and ${deleteConfirm.partnerName}. This cannot be undone.`
+            ? `Permanently remove the baptism request for ${deleteConfirm.childName} (submitted by ${deleteConfirm.name}). This cannot be undone.`
             : ""
         }
         confirmLabel="Delete"
@@ -406,7 +386,7 @@ export function StaffWeddingAppointmentsPanel({
         title="Reject this request?"
         description={
           rejectConfirm
-            ? `Mark the request from ${rejectConfirm.name} and ${rejectConfirm.partnerName} as rejected. The record stays in the list but will no longer be pending.`
+            ? `Mark the baptism request for ${rejectConfirm.childName} as rejected. The record stays in the list but will no longer be pending.`
             : ""
         }
         confirmLabel="Reject request"

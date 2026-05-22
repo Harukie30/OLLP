@@ -34,3 +34,18 @@ model WeddingAppointment {
 
   @@map("wedding_appointments")
 }
+
+model BaptismAppointment {
+  idUser       String    @id @map("id_user")
+  name         String
+  email        String
+  phone        String?
+  childName    String    @map("child_name")
+  intendedDate String?   @map("intended_date")
+  message      String?
+  submittedAt  DateTime  @default(now()) @map("submitted_at")
+  status       String    @default("pending")
+  acceptedAt   DateTime? @map("accepted_at")
+
+  @@map("baptism_appointments")
+}

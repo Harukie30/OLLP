@@ -1,9 +1,10 @@
 "use client"
 
-import { Loader2, Lock, ShieldCheck } from "lucide-react"
+import { Lock, ShieldCheck } from "lucide-react"
 
 import { SiteLogo } from "@/components/site-logo"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { churchEyebrow, churchFormalName, inputClassName } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
@@ -28,9 +29,9 @@ export function StaffSignInCard({
   return (
     <div
       className={cn(
-        "w-full overflow-hidden bg-white/95 backdrop-blur-sm",
+        "w-full overflow-hidden bg-white/90 backdrop-blur-md",
         compact
-          ? "rounded-2xl border border-sky-100/90 shadow-xl shadow-sky-900/10"
+          ? "rounded-2xl border border-white/60 shadow-2xl shadow-sky-950/15"
           : "mx-auto max-w-lg rounded-2xl border border-sky-100 shadow-lg shadow-sky-900/5"
       )}
     >
@@ -38,7 +39,7 @@ export function StaffSignInCard({
         className={cn(
           "border-b border-sky-100/90 px-6 py-7 text-center",
           compact
-            ? "bg-gradient-to-br from-sky-50/90 via-white to-white"
+            ? "bg-gradient-to-br from-sky-100/90 via-sky-50/80 to-white/90"
             : "relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-sky-100/70 px-5 pt-7 pb-5 sm:px-6 sm:pt-8 sm:pb-6"
         )}
       >
@@ -117,7 +118,7 @@ export function StaffSignInCard({
         >
           {pending ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
+              <Spinner />
               Signing in…
             </>
           ) : (

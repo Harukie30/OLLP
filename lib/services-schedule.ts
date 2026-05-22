@@ -91,7 +91,7 @@ export const sacramentalBookings: SacramentalBooking[] = [
       "Prepare for the Sacrament of Matrimony with our parish team. We’ll walk you through requirements, paperwork, and marriage preparation.",
     leadTime: "Contact the parish office at least 6 months before your intended date.",
     icon: Heart,
-    cta: { label: "Request wedding appointment", href: "/plan-a-visit" },
+    cta: { label: "Request wedding appointment", href: "#" },
   },
   {
     title: "Baptisms",
@@ -99,7 +99,7 @@ export const sacramentalBookings: SacramentalBooking[] = [
       "Welcome children (and adults, through RCIA) into the Church. We’ll schedule preparation sessions and set a baptism date.",
     leadTime: "Schedule early so formation and paperwork can be completed ahead of time.",
     icon: Baby,
-    cta: { label: "Ask about baptism", href: "/plan-a-visit" },
+    cta: { label: "Request baptism appointment", href: "#" },
   },
   {
     title: "Other sacraments & intentions",
