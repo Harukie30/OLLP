@@ -6,7 +6,7 @@ export const churchFormalName =
 
 export const siteLogo = {
   src: "/logo.jpg",
-  alt: "Assumpta Choir logo",
+  alt: "Our Lady of Lourdes Church logo",
 } as const
 
 export const heroBackground = "/bg-ch.JPG"
@@ -37,7 +37,7 @@ export const address = {
 
 export const serviceSummary = "Sundays at 6:00 AM - 8:00 PM"
 export const officeHours = "Mon–Sun, 9 AM – 3 PM"
-export const contactEmail = "hello@gracecommunity.org"
+export const contactEmail = "ollp@gmailsample.com"
 
 export const navLinks = [
   { href: "/services", label: "Services" },
